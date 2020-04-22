@@ -15,22 +15,22 @@ OAUTH_PARAMS = {
 
 # print('?'.join((OAUTH_URL, urlencode(OAUTH_PARAMS))))
 
-TOKEN = '984e9baae14ba40cf49ac5494837330ff8a43f3b84ba1f305b4e13493fd641819cfc7072123d5db31'
+TOKEN = 'efff9bed96234bacd266f20f057533d3fe293fc498f5f7e4f3d1217eb70bb51a693b464a0cf4f63f3a5bd'
 
 
-###'https://api.vk.com/method/users.get?' обращение к апи вк
+###'https://api.vk.com/method/________' обращение к методам апи вк
 
 
 class VkUser:
-
+    friends = []
+    groups = []
+    id = None
     def __init__(self, id):
         self.id = id
-        friends = []
-        groups = []
         self.user = {
             'access_token': TOKEN,
             'user_ids': self.id,
-            'v': 5.89
+            'v': 5.124
 
         }
         response_user = requests.get('https://api.vk.com/method/users.get?', urlencode(self.user))
@@ -38,7 +38,14 @@ class VkUser:
         self.first_name = user_info['response'][0]['first_name']
         self.last_name = user_info['response'][0]['last_name']
         # pprint(user_info)
-        print(self.first_name, self.last_name)
+        # print(self.first_name, self.last_name)
+        try:
+            self.id = response_user.json()['response'][0]['id']
+        except KeyError:
+            self.id = None
+        else:
+            self.get_friends()
+            self.get_groups()
 
     def get_friends(self):
         response_friends = requests.get('https://api.vk.com/method/friends.get?', urlencode(self.user))
@@ -48,38 +55,46 @@ class VkUser:
     def get_groups(self):
         response_groups = requests.get('https://api.vk.com/method/groups.get?', urlencode(self.user))
         self.groups = response_groups.json()['response']['items']
-        # pprint(self.get_groups())
+        # pprint(self.groups)
 
+# user1= VkUser(17460386)
+# # user1.get_friends()
+# user1.get_groups()
 
-class GroupVk(object):
+class VkGroup:
     gid = None
     name = ''
     count = 0
     members = []
-    access_token = TOKEN
-    version_api = '5.8'
+    friends = []
+    groups = []
 
     def __init__(self, gid):
         self.gid = gid
-        self.get_members()
+
+        self.group = {
+            'access_token': TOKEN,
+            'group_id': self.gid,
+            'v': 5.103
+        }
+        # self.get_members()
 
     def get_members(self):
-        response = requests.get('https://api.vk.com/method/groups.getMembers', {
-            'group_id': self.gid,
-            'access_token': self.access_token,
-            'v': self.version_api
-        })
-        self.members = response.json()['response']['users']
+        response = requests.get('https://api.vk.com/method/groups.getMembers', urlencode(self.group))
+        self.members = response.json()['response']['items']
+        # pprint(self.members)
         self.count = response.json()['response']['count']
+        # pprint(self.count)
 
     def get_group_name(self):
-        response = requests.get('https://api.vk.com/method/groups.getById', {
-            'group_ids': self.gid,
-            'access_token': self.access_token,
-            'v': self.version_api
-        })
+        response = requests.get('https://api.vk.com/method/groups.getById', urlencode(self.group))
         self.name = response.json()['response'][0]['name']
+        # pprint(self.name)
 
+
+# group = VkGroup(113682799)
+# group.get_group_name()
+# group.get_members()
 
 def get_user():
     while True:
@@ -99,14 +114,16 @@ def get_user():
     return user_vk
 
 
+
 def check_groups_for_friends(user_vk):
+
     group_count = len(user_vk.groups)
     print('Количество групп в которых состоит пользователь: {}'.format(group_count))
     print('Проверяем группы пользователя на друзей:')
     private_groups = []
     friends = set(user_vk.friends)
     for index, gid in enumerate(user_vk.groups):
-        group_vk = GroupVk(gid)
+        group_vk = VkGroup(gid)
         time.sleep(0.34)
         if friends.isdisjoint(group_vk.members):
             group_vk.get_group_name()
