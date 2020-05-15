@@ -8,14 +8,14 @@ OAUTH_URL = 'https://oauth.vk.com/authorize'
 OAUTH_PARAMS = {
     'client_id': 7279354,
     # 'redirect_uri':
-    'display': 'popup',
-    'scope': 'friends',
+    'display': 'page',
+    'scope': 'offline',
     'response_type': 'token'
 }
 
-# print('?'.join((OAUTH_URL, urlencode(OAUTH_PARAMS))))
+print('?'.join((OAUTH_URL, urlencode(OAUTH_PARAMS))))
 
-TOKEN = '068831e8731446f31c6e0104146c7d3e35faeb07b744ec2235cf0e5da26dc751b3e71fd629613ed6c057a'
+TOKEN = 'e8dc53024c6b7055b46705e5399552b394e423b6a4bfec550fff5fa547fe799d133e4a448fc3187895c71'
 
 
 ###'https://api.vk.com/method/________' обращение к методам апи вк
@@ -68,7 +68,7 @@ class VkUser:
 # user1.get_groups()
 
 class VkGroup:
-    gid = None
+    id = None
     name = ''
     count = 0
     members = []
@@ -77,7 +77,6 @@ class VkGroup:
 
     def __init__(self, gid):
         self.gid = gid
-        # self.get_members()
 
         self.group = {
             'access_token': TOKEN,
@@ -85,13 +84,16 @@ class VkGroup:
             'v': 5.103
         }
 
+        self.get_members()
 
     def get_members(self):
         response = requests.get('https://api.vk.com/method/groups.getMembers', urlencode(self.group))
-        self.members = response.json()['response'][0]['items']
+        self.members = response.json()['response']['items']
         # pprint(self.members)
-        self.count = response.json()['response'][0]['count']
+        self.count = response.json()['response']['count']
         # pprint(self.count)
+
+
 
     def get_group_name(self):
         response = requests.get('https://api.vk.com/method/groups.getById', urlencode(self.group))
@@ -131,15 +133,15 @@ def check_groups_for_friends(user_vk):
     friends = set(user_vk.friends)
     for index, gid in enumerate(user_vk.groups):
         group_vk = VkGroup(gid)
-        time.sleep(0.34)
+        time.sleep(0.5)
         if friends.isdisjoint(group_vk.members):
             group_vk.get_group_name()
-            time.sleep(0.34)
+            time.sleep(0.5)
             private_groups.append(group_vk)
         percent_done = int((index + 1) / group_count * 100)
         print('\r{}%'.format(percent_done), end='')
     print('')
-    return private_groups
+    return (private_groups)
 
 
 def save_result(private_groups):
