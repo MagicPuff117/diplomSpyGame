@@ -90,9 +90,9 @@ class VkGroup:
     def get_members(self):
         response = requests.get('https://api.vk.com/method/groups.getMembers', urlencode(self.group))
         self.members = response.json()['response']['items']
-        pprint(self.members)
+#         pprint(self.members)
         self.count = response.json()['response']['count']
-        pprint(self.count)
+#         pprint(self.count)
 
 
 
