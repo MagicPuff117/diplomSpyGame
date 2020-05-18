@@ -13,7 +13,7 @@ OAUTH_PARAMS = {
     'response_type': 'token'
 }
 
-print('?'.join((OAUTH_URL, urlencode(OAUTH_PARAMS))))
+# print('?'.join((OAUTH_URL, urlencode(OAUTH_PARAMS))))
 
 TOKEN = 'e8dc53024c6b7055b46705e5399552b394e423b6a4bfec550fff5fa547fe799d133e4a448fc3187895c71'
 
@@ -81,6 +81,7 @@ class VkGroup:
         self.group = {
             'access_token': TOKEN,
             'group_id': self.gid,
+            'filter': 'friends',
             'v': 5.103
         }
 
@@ -89,9 +90,9 @@ class VkGroup:
     def get_members(self):
         response = requests.get('https://api.vk.com/method/groups.getMembers', urlencode(self.group))
         self.members = response.json()['response']['items']
-        # pprint(self.members)
+        pprint(self.members)
         self.count = response.json()['response']['count']
-        # pprint(self.count)
+        pprint(self.count)
 
 
 
